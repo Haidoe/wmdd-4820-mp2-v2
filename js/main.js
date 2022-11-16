@@ -1,102 +1,94 @@
-//Where Todo objects will be stored
-let todos = [];
+//Event Listener --- For Add to List
 
-//Bringing the Checked Checkbox down
-const updateTodosSequence = () => {
-  //Get all the completed -- array filter
-  const completed = todos.filter((todo) => todo.completed);
+let todoList = [];
 
-  //Get all the not completed  -- array filter
-  const notCompleted = todos.filter((todo) => !todo.completed);
-
-  //Update the Todos List -- combing 2 arrays using spread operator
-  todos = [...notCompleted, ...completed];
-};
-
-//This will make the table appear.
-const drawTable = () => {
-  //Clear the table.
+function drawTable() {
+  //Reset the table
   userFeedbackTable.innerHTML = "";
 
-  //Loop to the Todo Array
-  for (let i = 0; i < todos.length; i++) {
-    //Get the current Todo.
-    const todo = todos[i];
+  //For of
+  for (const item of todoList) {
+    //<tr> </tr>
+    const row = userFeedbackTable.insertRow();
 
-    //Creating Checkbox
-    const checkbox = document.createElement("input");
-    checkbox.setAttribute("type", "checkbox");
-    checkbox.checked = todo.completed;
-    //Sequence of the todo in the array -- adding custom attribute -- storing the position of the todo in the array.
-    checkbox.setAttribute("sequence", i);
+    // <td></td> --- Todo
+    const cell1 = row.insertCell();
+    cell1.innerHTML = item.todo;
 
-    //Drawing process happens here
-    //Creating a row in a table <tr>
-    const row = userFeedbackTable.insertRow(i);
+    // Created Date
+    const cell2 = row.insertCell();
+    cell2.innerHTML = item.createdDate;
 
-    //Creating a td inside the row.
-    row.insertCell(0).innerHTML = todo.todo;
-    const created = row.insertCell(1);
-    created.innerHTML = todo.created; // Try to console log this todo.created.
+    // Display Checkbox
+    const cell3 = row.insertCell();
+    cell3.appendChild(item.checkbox);
+    item.checkbox.value = item.name;
 
-    row.insertCell(2).appendChild(checkbox);
-    const updated = row.insertCell(3);
-    updated.innerHTML = todo.updated;
+    // Display dateCompletion
+    const cell4 = row.insertCell();
+    cell4.innerHTML = item.dateCompletion;
+
+    if (item.dateCompletion) {
+      row.style.backgroundColor = "#000";
+    }
   }
-};
+}
 
-const addTodo = (e) => {
-  e.preventDefault();
+addItem.addEventListener("click", () => {
+  // Get User Input -- Todo
+  const todo = userInput.value;
 
-  const todo = userInput.value.trim();
+  // Created Date
+  const createdDate = new Date().toDateString();
 
-  if (!todo) {
-    return;
-  }
+  // Checkbox
+  const checkbox = document.createElement("input");
+  checkbox.setAttribute("type", "checkbox");
 
-  const now = new Date();
-  const created = now.toDateString();
+  // Date Completion.
+  const dateCompletion = "";
 
-  todos.push({
+  //Create an object of the data needed.
+  const todoObject = {
     todo,
-    created,
-    completed: false,
-    updated: "",
-  });
+    createdDate,
+    checkbox,
+    dateCompletion,
+    name: todoList.length,
+  };
+
+  // Stored in Array.
+  todoList.push(todoObject);
 
   userInput.value = "";
   userInput.focus();
 
-  updateTodosSequence();
-
-  //Display To Table
+  //Display the Table
   drawTable();
-};
+});
 
-addItem.addEventListener("click", addTodo);
+userFeedbackTable.addEventListener("click", (event) => {
+  //Trigger Checkbox Listener
+  if (event.target.matches("input")) {
+    //Update the DateCompletion
+    const result = todoList.find((item) => item.name == event.target.value);
 
-//Event Delegation -- Checkbox Event Listeners
-userFeedbackTable.addEventListener("click", (e) => {
-  // This will check if the the checkbox has been clicked
-  if (e.target.matches("input")) {
-    //Custom attribute, need to retrience the data using getAttribute
-    const id = e.target.getAttribute("sequence");
-    const todo = todos[id];
-    todo.completed = !todo.completed;
-
-    if (todo.completed) {
-      const now = new Date();
-      const date = now.toDateString();
-
-      todo.updated = date;
+    //Shift to the bottom
+    if (result.dateCompletion) {
+      result.dateCompletion = "";
     } else {
-      todo.updated = "";
+      result.dateCompletion = new Date().toDateString();
+
+      //Delete the current todo into the array list
+      const newTodoList = todoList.filter(
+        (item) => item.name != event.target.value
+      );
+
+      newTodoList.push(result);
+
+      todoList = newTodoList;
     }
 
-    //Bringing the Checked Checkbox down
-    updateTodosSequence();
-
-    //Redraw the table
     drawTable();
   }
 });
