@@ -63,6 +63,8 @@ addItem.addEventListener("click", () => {
   userInput.value = "";
   userInput.focus();
 
+  sortTodo();
+
   //Display the Table
   drawTable();
 });
@@ -78,17 +80,36 @@ userFeedbackTable.addEventListener("click", (event) => {
       result.dateCompletion = "";
     } else {
       result.dateCompletion = new Date().toDateString();
-
-      //Delete the current todo into the array list
-      const newTodoList = todoList.filter(
-        (item) => item.name != event.target.value
-      );
-
-      newTodoList.push(result);
-
-      todoList = newTodoList;
     }
 
+    sortTodo();
+
+    //Refresh the table
     drawTable();
   }
 });
+
+function sortTodo() {
+  //Get completed todos
+  const completed = todoList.filter(function (item) {
+    return item.dateCompletion.length;
+  });
+
+  //Get the not completed
+  const notCompleted = todoList.filter(function (item) {
+    return item.dateCompletion.length === 0;
+  });
+
+  //Combine into new array
+  const newTodoList = [];
+
+  notCompleted.forEach((item) => {
+    newTodoList.push(item);
+  });
+
+  completed.forEach((item) => {
+    newTodoList.push(item);
+  });
+
+  todoList = newTodoList;
+}
